@@ -24,11 +24,13 @@ class CustomCreditsState extends MusicBeatState {
     var descBox:FunkinSprite;
     var description:FlxText;
 
-    var polymodMeta:Dynamic;
+    var creditDatas:Array = [];
 
     var paths:String = 'mods/creditsMenu/';
     
     var contributors:Array<Dynamic> = [];
+    var datas:Array<Dynamic> = [];
+    var urls:Array<Dynamic> = [];
     var icons:Array<Dynamic> = [];
     var descs:Array<Dynamic> = [];
 
@@ -55,44 +57,63 @@ class CustomCreditsState extends MusicBeatState {
         bg.screenCenter();
         add(bg);
 
-        polymodMeta = parseJsonFile(getPath('data/config/credits.json'));
+        for (i in FileUtil.readDir("mods")) {
+            if (FileUtil.fileExists("mods/" + i + "/data/config/credits.json")) {
+                creditDatas.push(parseJsonFile("mods/" + i + "/data/config/credits.json"));
+            }
+        }
+        var copy = [];
+        for (i in creditDatas) {
+            copy.push(null);
+        }
+        for (i in creditDatas) {
+            while (i.order > creditDatas.length-1) {
+                i.order--;
+            }
+            copy[i.order] = i;
+        }
+        creditDatas = copy;
 
-        var bgm:String = polymodMeta.music;
+        var bgm:String = creditDatas[0].music;
         FunkinSound.playMusic(bgm, {overrideExisting: true, restartTrack: false, persist: true});
 
         var count:Int = 0;
         var i:Int = 20;
-        for (category in polymodMeta.categories) {
-            var text:AtlasText = new AtlasText(0, i, category.title, "bold");
-            text.screenCenter();
-            text.y = i;
-            add(text);
-
-            i += 200;
-            count++;
-
-            for (contributor in category.contributors) {
-                var text:AtlasText = new AtlasText(0, i, contributor.name, "default");
+        for (file in creditDatas) {
+            for (category in file.categories) {
+                var text:AtlasText = new AtlasText(0, i, category.title, "bold");
                 text.screenCenter();
                 text.y = i;
-                var icon:FunkinSprite = new FunkinSprite(0, 0).loadGraphic(Paths.image("credits/" + contributor.icon));
-                icon.setGraphicSize(100);
-                icon.updateHitbox();
-                icons.push(icon);
-                add(icon);
-                descs.push(contributor.roles);
-                contributors.push(text);
                 add(text);
-                i += 150;
-            count++;
+    
+                i += 200;
+                count++;
+    
+                for (contributor in category.contributors) {
+                    var text:AtlasText = new AtlasText(0, i, contributor.name, "default");
+                    trace(text.text);
+                    text.screenCenter();
+                    text.y = i;
+                    var icon:FunkinSprite = new FunkinSprite(0, 0).loadGraphic(Paths.image("credits/" + contributor.icon));
+                    icon.setGraphicSize(100);
+                    icon.updateHitbox();
+                    icons.push(icon);
+                    add(icon);
+                    datas.push(contributor);
+                    descs.push(contributor.roles);
+                    contributors.push(text);
+                    add(text);
+                    i += 150;
+                count++;
+                }
+                var text:AtlasText = new AtlasText(0, i, "", "bold");
+                text.screenCenter();
+                text.y = i;
+                add(text);
+    
+                i += 80;
+                count++;
             }
-            var text:AtlasText = new AtlasText(0, i, "", "bold");
-            text.screenCenter();
-            text.y = i;
-            add(text);
-
-            i += 80;
-            count++;
         }
 
         bg.scrollFactor.set(0, (1/count)/1.8);
@@ -140,6 +161,12 @@ class CustomCreditsState extends MusicBeatState {
             FlxG.switchState(() -> new MainMenuState());
         }
 
+        if (controls.ACCEPT) {
+            if (datas[curSelected].url != null && datas[curSelected].url != "") {
+                FlxG.openURL(datas[curSelected].url);
+            }
+        }
+
         changeSelection((controls.get_UI_UP_P() ? -1 : 0) + (controls.get_UI_DOWN_P() ? 1 : 0));
 
         camFollow.y = contributors[curSelected].y+40;
@@ -147,7 +174,12 @@ class CustomCreditsState extends MusicBeatState {
 
         var index:Int = 0;
         for (text in contributors) {
-            text.x = MathUtil.coolLerp(text.x, curSelected == index ? ((FlxG.width/2)-(text.width/2))-(icons[index].width/2)-10 : 100, 0.1);
+            text.visible = true;
+            var daOffset = curSelected == index ? ((FlxG.width/2)-(text.width/2)) : 100;
+            if (datas[index].icon != null && datas[index].icon != "") {
+                daOffset += -(icons[index].width/2)-10;
+            }
+            text.x = MathUtil.coolLerp(text.x, daOffset, 0.1);
             icons[index].y = text.y + (text.height/2) - (icons[index].height/2) + 10;
             icons[index].x = text.x + text.width + 20;
             index++;

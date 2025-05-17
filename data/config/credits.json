@@ -1,5 +1,6 @@
 {
   "music": "freakyMenu",
+  "order": 2,
   "categories": [
     {
       "title": "Credits Menu",
