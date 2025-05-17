@@ -1,0 +1,170 @@
+import haxe.Json;
+import sys.io.File;
+import flixel.FlxG;
+import funkin.Paths;
+import flixel.FlxSprite;
+import flixel.FlxObject;
+import funkin.ui.AtlasText;
+import flixel.math.FlxMath;
+import flixel.text.FlxText;
+import funkin.util.FileUtil;
+import funkin.util.MathUtil;
+import funkin.util.ReflectUtil;
+import funkin.audio.FunkinSound;
+import funkin.ui.MusicBeatState;
+import funkin.graphics.FunkinSprite;
+import funkin.modding.PolymodHandler;
+import flixel.text.FlxTextBorderStyle;
+import funkin.ui.mainmenu.MainMenuState;
+
+class CustomCreditsState extends MusicBeatState {
+
+    var bg:FunkinSprite;
+    
+    var descBox:FunkinSprite;
+    var description:FlxText;
+
+    var polymodMeta:Dynamic;
+
+    var paths:String = 'mods/creditsMenu/';
+    
+    var contributors:Array<Dynamic> = [];
+    var icons:Array<Dynamic> = [];
+    var descs:Array<Dynamic> = [];
+
+    var curSelected = 0;
+
+    var camFollow:FlxObject;
+
+    function new(){
+        super('CustomCreditsState');
+    }
+
+    function getPath(file:String) {
+        return paths + file;
+    }
+
+    function create() {
+        super.create();
+
+
+        bg = new FunkinSprite(0, 0).loadGraphic(Paths.image('menuDesat'));
+        bg.scrollFactor.set(0, 0.17);
+        bg.setGraphicSize(Std.int(bg.width * 1.2));
+        bg.updateHitbox();
+        bg.screenCenter();
+        add(bg);
+
+        polymodMeta = parseJsonFile(getPath('data/config/credits.json'));
+
+        var bgm:String = polymodMeta.music;
+        FunkinSound.playMusic(bgm, {overrideExisting: true, restartTrack: false, persist: true});
+
+        var count:Int = 0;
+        var i:Int = 20;
+        for (category in polymodMeta.categories) {
+            var text:AtlasText = new AtlasText(0, i, category.title, "bold");
+            text.screenCenter();
+            text.y = i;
+            add(text);
+
+            i += 200;
+            count++;
+
+            for (contributor in category.contributors) {
+                var text:AtlasText = new AtlasText(0, i, contributor.name, "default");
+                text.screenCenter();
+                text.y = i;
+                var icon:FunkinSprite = new FunkinSprite(0, 0).loadGraphic(Paths.image("credits/" + contributor.icon));
+                icon.setGraphicSize(100);
+                icon.updateHitbox();
+                icons.push(icon);
+                add(icon);
+                descs.push(contributor.roles);
+                contributors.push(text);
+                add(text);
+                i += 150;
+            count++;
+            }
+            var text:AtlasText = new AtlasText(0, i, "", "bold");
+            text.screenCenter();
+            text.y = i;
+            add(text);
+
+            i += 80;
+            count++;
+        }
+
+        bg.scrollFactor.set(0, (1/count)/1.8);
+        camFollow = new FlxObject(0, 0, 1, 1);
+        add(camFollow);
+        FlxG.camera.follow(camFollow, null, 0.1);
+
+
+        descBox = new FunkinSprite(0, 0).makeGraphic(FlxG.width-100, 80, 0xFF000000);
+        descBox.scrollFactor.set();
+        descBox.screenCenter();
+        descBox.alpha = 0.75;
+        add(descBox);
+
+        description = new FlxText(0, 0, FlxG.width/1.5, "", 32);
+        description.font = 'VCR OSD Mono';
+        description.alignment = 'center';
+        description.scrollFactor.set();
+        add(description);
+    }
+
+    /**
+     * Shortcut to parse a JSON string
+     * @param str JSON contents as string.
+     * @return Parsed JSON
+    */
+    public function parseJsonString(str:String) {
+        return Json.parse(str);
+    }
+
+    /**
+     * Shortcut to parse a JSON file
+     * @param path  Path to the JSON file
+     * @return Parsed JSON
+    */
+    public function parseJsonFile(path:String) {
+        return parseJsonString(FileUtil.readStringFromPath(path));
+    }
+
+    function update(elapsed) {
+        super.update(elapsed);
+        
+        if (controls.BACK) {
+            FlxG.sound.play(Paths.sound("cancelMenu"));
+            FlxG.switchState(() -> new MainMenuState());
+        }
+
+        changeSelection((controls.get_UI_UP_P() ? -1 : 0) + (controls.get_UI_DOWN_P() ? 1 : 0));
+
+        camFollow.y = contributors[curSelected].y+40;
+        camFollow.x = FlxG.width/2;
+
+        var index:Int = 0;
+        for (text in contributors) {
+            text.x = MathUtil.coolLerp(text.x, curSelected == index ? ((FlxG.width/2)-(text.width/2))-(icons[index].width/2)-10 : 100, 0.1);
+            icons[index].y = text.y + (text.height/2) - (icons[index].height/2) + 10;
+            icons[index].x = text.x + text.width + 20;
+            index++;
+        }
+        if (description != null) {
+            description.text = descs[curSelected];
+            description.x = FlxG.width/6;
+            description.y = 650;
+            description.y -= description.height/2;
+            descBox.y = description.y + (description.height/2) - (descBox.height/2);
+        }
+    }
+    
+    function changeSelection(?amt:Int = 0) {
+        curSelected = FlxMath.wrap(curSelected + amt, 0, contributors.length - 1);
+        if (amt != 0) {
+            FlxG.sound.play(Paths.sound('scrollMenu'));
+        }
+    }
+}

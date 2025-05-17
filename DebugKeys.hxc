@@ -1,0 +1,26 @@
+import flixel.FlxG;
+import funkin.Paths;
+import funkin.Highscore;
+import openfl.utils.Assets;
+import flixel.text.FlxText;
+import flixel.math.FlxMath;
+import flixel.util.FlxSave;
+import flixel.tweens.FlxTween;
+import funkin.graphics.FunkinSprite;
+import funkin.modding.module.Module;
+import flixel.text.FlxTextBorderStyle;
+import funkin.modding.base.ScriptedMusicBeatState;
+
+class Hotkeys extends Module
+{
+    function new() {
+        super('hotkeys');
+    }
+
+    function onUpdate() {
+        super.onUpdate();
+        if(FlxG.keys.justPressed.F2) {
+            FlxG.switchState(ScriptedMusicBeatState.init('CustomCreditsState'));
+        }
+    }   
+}
