@@ -14,10 +14,15 @@ import funkin.audio.FunkinSound;
 import funkin.ui.MusicBeatState;
 import funkin.graphics.FunkinSprite;
 import funkin.modding.PolymodHandler;
+import funkin.ui.credits.CreditsState;
 import flixel.text.FlxTextBorderStyle;
 import funkin.ui.mainmenu.MainMenuState;
+import funkin.modding.module.ModuleHandler;
+import funkin.ui.credits.CreditsDataHandler;
 
 class CustomCreditsState extends MusicBeatState {
+
+    var StateManager;
 
     var bg:FunkinSprite;
     
@@ -49,6 +54,7 @@ class CustomCreditsState extends MusicBeatState {
     function create() {
         super.create();
 
+        StateManager = ModuleHandler.getModule("StateManager");
 
         bg = new FunkinSprite(0, 0).loadGraphic(Paths.image('menuDesat'));
         bg.scrollFactor.set(0, 0.17);
@@ -57,25 +63,55 @@ class CustomCreditsState extends MusicBeatState {
         bg.screenCenter();
         add(bg);
 
+        var daObj = {
+            order: 1000,
+            categories: [
+                {
+                    title: "Friday Night Funkin",
+                    contributors: [
+                        {
+                            name: "Base Credits Menu",
+                            roles: "Press ENTER to open base credits menu.",
+                            isBaseCredits: true
+                        }
+                    ],
+                }
+            ]
+        }
+
+        trace(daObj);
         for (i in FileUtil.readDir("mods")) {
             if (FileUtil.fileExists("mods/" + i + "/data/config/credits.json")) {
                 creditDatas.push(parseJsonFile("mods/" + i + "/data/config/credits.json"));
             }
         }
+
         var copy = [];
         for (i in creditDatas) {
             copy.push(null);
         }
+        var offset = 0;
+        for (i in creditDatas) {
+            if (i.categories[0].title == "Credits Menu") {
+                copy[creditDatas.length-1] = i;
+            }
+        }
         for (i in creditDatas) {
             while (i.order > creditDatas.length-1) {
+                i.order--;
+            }
+            if (i.order == creditDatas.length-1) {
                 i.order--;
             }
             copy[i.order] = i;
         }
         creditDatas = copy;
 
+        creditDatas.push(daObj);
+
         var bgm:String = creditDatas[0].music;
         FunkinSound.playMusic(bgm, {overrideExisting: true, restartTrack: false, persist: true});
+        FlxG.sound.music.fadeIn(6, 0, 0.8);
 
         var count:Int = 0;
         var i:Int = 20;
@@ -158,12 +194,17 @@ class CustomCreditsState extends MusicBeatState {
         
         if (controls.BACK) {
             FlxG.sound.play(Paths.sound("cancelMenu"));
-            FlxG.switchState(() -> new MainMenuState());
+            FlxG.switchState(new MainMenuState());
         }
 
         if (controls.ACCEPT) {
-            if (datas[curSelected].url != null && datas[curSelected].url != "") {
-                FlxG.openURL(datas[curSelected].url);
+            if (datas[curSelected].isBaseCredits != null && datas[curSelected].isBaseCredits) {
+                StateManager.scriptSet("eventCancelled", true);
+                FlxG.switchState(new CreditsState());
+            } else {
+                if (datas[curSelected].url != null && datas[curSelected].url != "") {
+                    FlxG.openURL(datas[curSelected].url);
+                }
             }
         }
 
@@ -199,4 +240,5 @@ class CustomCreditsState extends MusicBeatState {
             FlxG.sound.play(Paths.sound('scrollMenu'));
         }
     }
+
 }

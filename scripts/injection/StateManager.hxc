@@ -1,0 +1,32 @@
+import flixel.FlxG;
+import funkin.util.ReflectUtil;
+import funkin.modding.module.Module;
+import funkin.modding.module.ModuleHandler;
+import funkin.modding.base.ScriptedMusicBeatState;
+
+
+class StateManager extends Module {
+
+    var eventCancelled = false;
+
+    function onStateChangeEnd() {
+        super.onStateChangeEnd();
+        var redirectStates:Array = [
+            {
+                request: "CreditsState",
+                target: ScriptedMusicBeatState.init('CustomCreditsState')
+            }
+        ];
+        var daThing = ReflectUtil.getClassNameOf(FlxG.state).split(".");
+        //trace(daThing[daThing.length - 1]);
+        for (i in redirectStates) {
+            if (daThing[daThing.length - 1] == i.request) {
+                if (!eventCancelled) {
+                    FlxG.switchState(i.target);
+                }
+                eventCancelled = false;
+            }
+        }
+    }
+
+}

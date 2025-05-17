@@ -1,0 +1,26 @@
+{
+  "music": "freakyMenu",
+  "order": 1000,
+  "categories": [
+    {
+      "title": "Friday Night Funkin",
+      "contributors": [
+          {
+            "name": "GENZU",
+            "icon": "genzu",
+            "color": "#ff9ecf",
+            "roles": "Coder",
+            "url": "https://www.youtube.com/@_genzu"
+          },
+          {
+            "name": "Nebula S. Nova",
+            "icon": "nebula",
+            "color": "#ff9ecf",
+            "roles": "Coder",
+            "url": "https://www.youtube.com/@ChinosModded"
+          }
+      ]
+    }
+  ]
+  
+}
