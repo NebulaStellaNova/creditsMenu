@@ -74,7 +74,8 @@ class CustomCreditsState extends MusicBeatState {
                         {
                             name: "Base Credits Menu",
                             roles: "Press ENTER to open base credits menu.",
-                            isBaseCredits: true
+                            isBaseCredits: true,
+                            color: "#42a4f5"
                         }
                     ],
                 }
