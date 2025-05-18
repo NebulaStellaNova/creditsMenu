@@ -23,6 +23,7 @@ import funkin.ui.credits.CreditsDataHandler;
 class CustomCreditsState extends MusicBeatState {
 
     var StateManager;
+    var NovaColorUtil;
 
     var bg:FunkinSprite;
     
@@ -55,6 +56,7 @@ class CustomCreditsState extends MusicBeatState {
         super.create();
 
         StateManager = ModuleHandler.getModule("StateManager");
+        NovaColorUtil = ModuleHandler.getModule("NovaColorUtil");
 
         bg = new FunkinSprite(0, 0).loadGraphic(Paths.image('menuDesat'));
         bg.scrollFactor.set(0, 0.17);
@@ -231,6 +233,21 @@ class CustomCreditsState extends MusicBeatState {
             description.y = 650;
             description.y -= description.height/2;
             descBox.y = description.y + (description.height/2) - (descBox.height/2);
+
+            descBox.visible = !(descs[curSelected] == null || descs[curSelected] == "");
+        }
+        if (datas[curSelected].color != null && datas[curSelected].color != "") {
+            bg.color = NovaColorUtil.scriptCall("interpolate", [
+                bg.color, 
+                NovaColorUtil.scriptCall("fromString", [datas[curSelected].color]),
+                0.1
+            ]);
+        } else {
+            bg.color = NovaColorUtil.scriptCall("interpolate", [
+                bg.color, 
+                0xFFFFFFFF,
+                0.1
+            ]);
         }
     }
     
