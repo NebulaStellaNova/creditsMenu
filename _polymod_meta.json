@@ -1,11 +1,21 @@
 {
-  "title": "asdas",
+  "title": "Credits Menu",
   "description": "Automatically plays the game with perfect timing.",
   "contributors": [
-    {
-      "name": "M&M",
-      "role": "Programmer"
-    }
+      {
+          "name": "GENZU",
+          "icon": "genzu",
+          "color": "#ff9ecf",
+          "roles": "Coder",
+          "url": "https://www.youtube.com/@_genzu"
+      },
+      {
+          "name": "Nebula S. Nova",
+          "icon": "nebula",
+          "color": "#9500ff",
+          "roles": "Coder",
+          "url": "https://www.youtube.com/@ChinosModded"
+      }
   ],
   "api_version": "0.6.4",
   "mod_version": "1.0.0",

@@ -3,6 +3,7 @@ import sys.io.File;
 import flixel.FlxG;
 import funkin.Paths;
 import flixel.FlxSprite;
+import funkin.Conductor;
 import flixel.FlxObject;
 import funkin.ui.AtlasText;
 import flixel.math.FlxMath;
@@ -17,6 +18,7 @@ import funkin.modding.PolymodHandler;
 import funkin.ui.credits.CreditsState;
 import flixel.text.FlxTextBorderStyle;
 import funkin.ui.mainmenu.MainMenuState;
+import funkin.modding.events.ScriptEvent;
 import funkin.modding.module.ModuleHandler;
 import funkin.ui.credits.CreditsDataHandler;
 
@@ -29,6 +31,7 @@ class CustomCreditsState extends MusicBeatState {
     
     var descBox:FunkinSprite;
     var description:FlxText;
+    var currentSong =  null;
 
     var creditDatas:Array = [];
 
@@ -39,6 +42,7 @@ class CustomCreditsState extends MusicBeatState {
     var urls:Array<Dynamic> = [];
     var icons:Array<Dynamic> = [];
     var descs:Array<Dynamic> = [];
+    var songs:Array<Dynamic> = [];
 
     var curSelected = 0;
 
@@ -66,9 +70,10 @@ class CustomCreditsState extends MusicBeatState {
         add(bg);
 
         var daObj = {
-            order: 1000,
+            order: 10000,
             categories: [
                 {
+                    music: "freeplayRandom",
                     title: "Friday Night Funkin",
                     contributors: [
                         {
@@ -83,12 +88,27 @@ class CustomCreditsState extends MusicBeatState {
         }
 
         trace(daObj);
+        var FUCKYOU = 0;
         for (i in FileUtil.readDir("mods")) {
-            if (FileUtil.fileExists("mods/" + i + "/data/config/credits.json")) {
-                creditDatas.push(parseJsonFile("mods/" + i + "/data/config/credits.json"));
-            }
-        }
+            if (FileUtil.fileExists("mods/" + i + "/_polymod_meta.json")) {
+                var category = parseJsonFile("mods/" + i + "/_polymod_meta.json");
+                var daThing = {
+                    order: FUCKYOU,
+                    categories: [
+                        category
+                    ]
+                };
+                
+                //trace(Json.stringify(daThing, null, "\t"));
+                if (daThing.categories[0].contributors.length != 0) {
+                    creditDatas.push(daThing);
+                }
 
+
+            }
+            FUCKYOU++;
+        }
+        //trace(creditDatas);
         var copy = [];
         for (i in creditDatas) {
             copy.push(null);
@@ -100,60 +120,79 @@ class CustomCreditsState extends MusicBeatState {
             }
         }
         for (i in creditDatas) {
+            trace("0" + i);
             while (i.order > creditDatas.length-1) {
                 i.order--;
             }
+            trace("1" + i);
             if (i.order == creditDatas.length-1) {
                 i.order--;
             }
+            trace("2" + i);
             copy[i.order] = i;
+            trace("3" + copy[i.order]);
         }
         creditDatas = copy;
+        trace(creditDatas);
 
         creditDatas.push(daObj);
 
-        var bgm:String = creditDatas[0].music;
-        FunkinSound.playMusic(bgm, {overrideExisting: true, restartTrack: false, persist: true});
-        FlxG.sound.music.fadeIn(6, 0, 0.8);
+        for (i in creditDatas) {
+            creditDatas.remove(null);
+        }
+
+        
+        //var bgm:String = creditDatas[0].music;
+        //FunkinSound.playMusic(bgm, {overrideExisting: true, restartTrack: false, persist: true});
+        //FlxG.sound.music.fadeIn(6, 0, 0.8);
 
         var count:Int = 0;
         var i:Int = 20;
         for (file in creditDatas) {
-            for (category in file.categories) {
-                var text:AtlasText = new AtlasText(0, i, category.title, "bold");
-                text.screenCenter();
-                text.y = i;
-                add(text);
-    
-                i += 200;
-                count++;
-    
-                for (contributor in category.contributors) {
-                    var text:AtlasText = new AtlasText(0, i, contributor.name, "default");
-                    trace(text.text);
+            if (file != null) {
+                for (category in file.categories) {
+                    var text:AtlasText = new AtlasText(0, i, category.title, "bold");
                     text.screenCenter();
                     text.y = i;
-                    var icon:FunkinSprite = new FunkinSprite(0, 0).loadGraphic(Paths.image("credits/" + contributor.icon));
-                    icon.setGraphicSize(100);
-                    icon.updateHitbox();
-                    icons.push(icon);
-                    add(icon);
-                    datas.push(contributor);
-                    descs.push(contributor.roles);
-                    contributors.push(text);
                     add(text);
-                    i += 150;
-                count++;
+        
+                    i += 200;
+                    count++;
+        
+                    for (contributor in category.contributors) {
+                        songs.push(category.music != null ? category.music : "freeplayRandom");
+                        var text:AtlasText = new AtlasText(0, i, contributor.name, "default");
+                        trace(text.text);
+                        text.screenCenter();
+                        text.y = i;
+                        var icon:FunkinSprite = new FunkinSprite(0, 0).loadGraphic(Paths.image("credits/" + contributor.icon));
+                        icon.setGraphicSize(100);
+                        icon.updateHitbox();
+                        icons.push(icon);
+                        add(icon);
+                        datas.push(contributor);
+                        descs.push(contributor.roles);
+                        contributors.push(text);
+                        add(text);
+                        i += 150;
+                        count++;
+                    }
+                    var text:AtlasText = new AtlasText(0, i, "", "bold");
+                    text.screenCenter();
+                    text.y = i;
+                    add(text);
+        
+                    i += 80;
+                    count++;
                 }
-                var text:AtlasText = new AtlasText(0, i, "", "bold");
-                text.screenCenter();
-                text.y = i;
-                add(text);
-    
-                i += 80;
-                count++;
+            } else {
+                songs.remove(songs[i]);
+                creditDatas.remove(file);
             }
         }
+
+        trace(contributors.length-1);
+        trace(songs.length-1);
 
         bg.scrollFactor.set(0, (1/count)/1.8);
         camFollow = new FlxObject(0, 0, 1, 1);
@@ -172,6 +211,8 @@ class CustomCreditsState extends MusicBeatState {
         description.alignment = 'center';
         description.scrollFactor.set();
         add(description);
+
+        Conductor.instance.forceBPM(120);
     }
 
     /**
@@ -192,8 +233,23 @@ class CustomCreditsState extends MusicBeatState {
         return parseJsonString(FileUtil.readStringFromPath(path));
     }
 
+    override function stepHit() {
+        super.stepHit();
+        var step = get_conductorInUse().currentStep;
+        //if (g)
+        if (step % 4 == 1) {
+            //FlxG.camera.zoom += 0.05;
+        }
+    }
+
+    var prevBeat = 0;
+
     function update(elapsed) {
         super.update(elapsed);
+        get_conductorInUse().update();
+        FlxG.camera.zoom = MathUtil.coolLerp(FlxG.camera.zoom, 1, 0.1);
+        
+        //trace(songs[curSelected]);
         
         if (controls.BACK) {
             FlxG.sound.play(Paths.sound("cancelMenu"));
@@ -216,20 +272,37 @@ class CustomCreditsState extends MusicBeatState {
         camFollow.y = contributors[curSelected].y+40;
         camFollow.x = FlxG.width/2;
 
+  
+        if (currentSong != songs[curSelected]) {
+            currentSong =  songs[curSelected];
+            if (FlxG.sound.music != null) {
+                FlxG.sound.music.fadeOut(0.5 /* Duration */, 0, ()->{
+                    FunkinSound.playMusic(currentSong, {startingVolume: 0, overrideExisting: true, restartTrack: false, persist: true, loop: true});
+                    
+                    FlxG.sound.music.fadeIn(0.5 /* Duration */, 0, 1);
+                });
+            } else {
+                FunkinSound.playMusic(currentSong, {startingVolume: 0, overrideExisting: true, restartTrack: false, persist: true, loop: true});
+                FlxG.sound.music.fadeIn(2, 0, 1);
+            }
+        }
+
         var index:Int = 0;
         for (text in contributors) {
-            text.visible = true;
-            var daOffset = curSelected == index ? ((FlxG.width/2)-(text.width/2)) : 100;
-            if (datas[index].icon != null && datas[index].icon != "") {
-                daOffset += -(icons[index].width/2)-10;
+            if (text != null) {
+                text.visible = true;
+                var daOffset = curSelected == index ? ((FlxG.width/2)-(text.width/2)) : 100;
+                if (datas[index].icon != null && datas[index].icon != "") {
+                    daOffset += -(icons[index].width/2)-10;
+                }
+                text.x = MathUtil.coolLerp(text.x, daOffset, 0.1);
+                icons[index].y = text.y + (text.height/2) - (icons[index].height/2) + 10;
+                icons[index].x = text.x + text.width + 20;
+                index++;
             }
-            text.x = MathUtil.coolLerp(text.x, daOffset, 0.1);
-            icons[index].y = text.y + (text.height/2) - (icons[index].height/2) + 10;
-            icons[index].x = text.x + text.width + 20;
-            index++;
         }
         if (description != null) {
-            description.text = descs[curSelected];
+            description.text = descs[curSelected] != null ? descs[curSelected] : "";
             description.x = FlxG.width/6;
             description.y = 650;
             description.y -= description.height/2;
@@ -255,7 +328,7 @@ class CustomCreditsState extends MusicBeatState {
     function changeSelection(?amt:Int = 0) {
         curSelected = FlxMath.wrap(curSelected + amt, 0, contributors.length - 1);
         if (amt != 0) {
-            FlxG.sound.play(Paths.sound('scrollMenu'));
+           FlxG.sound.play(Paths.sound('scrollMenu'));
         }
     }
 
