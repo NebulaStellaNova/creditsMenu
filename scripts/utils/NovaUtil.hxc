@@ -1,0 +1,39 @@
+import haxe.Json;
+import funkin.Assets;
+import funkin.util.FileUtil;
+import funkin.modding.module.Module;
+
+class NovaUtil extends Module {
+    
+    var paths:String = 'mods/Nova Menu/';
+
+    function getPath(file:String) {
+        return paths + file;
+    }
+
+    /**
+     * Shortcut to parse a JSON string
+     * @param str JSON contents as string.
+     * @return Parsed JSON
+    */
+    public function parseJsonString(str:String) {
+        return Json.parse(str);
+    }
+
+    /**
+     * Shortcut to parse a JSON file
+     * @param path  Path to the JSON file
+     * @return Parsed JSON
+    */
+    public function parseJsonFile(path:String) {
+        return parseJsonString(FileUtil.readStringFromPath(getPath(path)));
+    }
+
+    function checkFileExists(path:String) {
+        return Assets.exists(path);
+    }
+
+    function new() {
+        super('NovaUtil');
+    }
+}

@@ -1,0 +1,54 @@
+import haxe.Json;
+import StringTools;
+import funkin.Assets;
+import funkin.util.FileUtil;
+import funkin.util.FlxColorUtil;
+import funkin.modding.module.Module;
+
+class NovaColorUtil extends Module {
+
+    function new() {
+        super('NovaColorUtil');
+    }
+
+    var COLOR_REGEX = 0x00000000.COLOR_REGEX;
+
+    var colorLookup = 0x00000000.colorLookup;
+
+    function new_FlxColor(int:Int) {
+        return Std.parseInt(int);
+    }
+
+    function fromRGB(red:Int, green:Int, blue:Int, ?alpha:Int = 255) {
+        var color = 0x00000000;
+        return color.setRGB(red, green, blue, alpha);
+    }
+
+    function fromString(str:String)
+	{
+		var result = null;
+		str = StringTools.trim(str);
+
+		if (StringTools.startsWith(str, "#")) {
+			var hexColor:String = "0x00" + StringTools.replace(str, "#", "");
+			result = new_FlxColor(Std.parseInt(hexColor));
+			if (hexColor.length == 8) {
+				result.alphaFloat = 1;
+			}
+		} else {
+			str = str.toUpperCase();
+			for (key in colorLookup.keys()) {
+				if (key.toUpperCase() == str) {
+					result = new_FlxColor(colorLookup.get(key));
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+    function interpolate(color1, color2, ?factor:Float = 0.5) {
+        return FlxColorUtil.interpolate(color1, color2, factor);
+    }
+
+}
