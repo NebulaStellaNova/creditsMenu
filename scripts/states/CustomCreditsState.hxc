@@ -100,8 +100,10 @@ class CustomCreditsState extends MusicBeatState {
                 };
                 
                 //trace(Json.stringify(daThing, null, "\t"));
-                if (daThing.categories[0].contributors.length != 0) {
-                    creditDatas.push(daThing);
+                if (daThing.categories[0].contributors != null) {
+                    if (daThing.categories[0].contributors.length != 0) {
+                        creditDatas.push(daThing);
+                    }
                 }
 
 
@@ -114,32 +116,32 @@ class CustomCreditsState extends MusicBeatState {
             copy.push(null);
         }
         var offset = 0;
+        
         for (i in creditDatas) {
-            if (i.categories[0].title == "Credits Menu") {
-                copy[creditDatas.length-1] = i;
-            }
-        }
-        for (i in creditDatas) {
-            trace("0" + i);
             while (i.order > creditDatas.length-1) {
                 i.order--;
             }
-            trace("1" + i);
             if (i.order == creditDatas.length-1) {
                 i.order--;
             }
-            trace("2" + i);
             copy[i.order] = i;
-            trace("3" + copy[i.order]);
         }
         creditDatas = copy;
         trace(creditDatas);
 
-        creditDatas.push(daObj);
-
         for (i in creditDatas) {
             creditDatas.remove(null);
         }
+
+        for (i in creditDatas) {
+            if (i.categories[0].title == "Credits Menu") {
+                copy.remove(i);
+                copy.push(i);
+            }
+        }
+        creditDatas.push(daObj);
+
+        
 
         
         //var bgm:String = creditDatas[0].music;
