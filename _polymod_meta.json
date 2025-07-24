@@ -3,18 +3,18 @@
   "description": "Psych Engine inspired credits menu.",
   "contributors": [
       {
-          "name": "GENZU",
-          "icon": "genzu",
-          "color": "#ff9ecf",
-          "roles": "Coder",
-          "url": "https://www.youtube.com/@_genzu"
-      },
-      {
           "name": "Nebula S. Nova",
           "icon": "nebula",
           "color": "#9500ff",
           "roles": "Coder",
           "url": "https://www.youtube.com/@ChinosModded"
+      },
+      {
+          "name": "GENZU",
+          "icon": "genzu",
+          "color": "#ff9ecf",
+          "roles": "Coder",
+          "url": "https://www.youtube.com/@_genzu"
       }
   ],
   "api_version": "0.6.4",

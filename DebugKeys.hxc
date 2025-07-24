@@ -1,4 +1,4 @@
-import flixel.FlxG;
+/* import flixel.FlxG;
 import funkin.Paths;
 import funkin.Highscore;
 import openfl.utils.Assets;
@@ -23,4 +23,4 @@ class Hotkeys extends Module
             FlxG.switchState(ScriptedMusicBeatState.init('CustomCreditsState'));
         }
     }   
-}
+} */
